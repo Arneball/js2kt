@@ -1,0 +1,4 @@
+{{ range . }}data class {{ .Name }}(
+{{ range .Fields }}    val {{ .Name }}: {{ .Type }},
+{{ end }})
+{{ end }}
