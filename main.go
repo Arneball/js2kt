@@ -26,8 +26,8 @@ type (
 var (
 	//go:embed template.tmpl
 	tmpl string
-	i = 0
-	t *template.Template
+	i    = 0
+	t    *template.Template
 )
 
 func init() {
@@ -39,7 +39,7 @@ func init() {
 }
 
 func main() {
-	m := map[string]interface{}{}
+	var m map[string]interface{}
 	err := json.NewDecoder(os.Stdin).Decode(&m)
 	if err != nil {
 		panic(err)
@@ -56,7 +56,7 @@ func write(w io.Writer, classes []Class) error {
 }
 
 func parseClass(decodedJson map[string]interface{}) []Class {
-	data := Class {
+	data := Class{
 		Name: fmt.Sprintf("ChangeMe%d", i),
 	}
 	i++
@@ -95,9 +95,17 @@ func getType(v interface{}) (string, []Class) {
 	case time.Time:
 		return "java.util.Date", nil
 	case []interface{}:
+		elems := v.([]interface{})
+		if len(elems) == 0 {
+			return "List<Nothing> = emptyList()", nil
+		}
 		m := v.([]interface{})[0]
 		classes := parseClass(m.(map[string]interface{}))
 		return fmt.Sprintf("List<%s>", classes[0].Name), classes
+	case map[string]interface{}:
+		elems := v.(map[string]interface{})
+		classes := parseClass(elems)
+		return classes[0].Name, classes
 	}
 	panic(fmt.Sprintf("Unknown shit: %s", v))
 }
